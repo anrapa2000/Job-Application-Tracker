@@ -21,7 +21,10 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
         "http://localhost:4173",  # Vite preview
-        "http://127.0.0.1:4173"
+        "http://127.0.0.1:4173",
+        "https://job-application-tracker-2mm8.onrender.com",  # Your deployed backend
+        "https://job-application-tracker-1-p42y.onrender.com",  # Your deployed frontend
+        "*"  # Allow all origins for development/deployment
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
