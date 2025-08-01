@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import api from '../api';
 import { Link } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 type Job = {
   id: number;
@@ -13,6 +14,7 @@ type Job = {
   job_description: string;
   notes: string;
   location: string;
+  resume_url?: string;
 };
 
 // Styled Components
@@ -88,6 +90,44 @@ const AddButton = styled(Link)`
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
   }
+`;
+
+const ExportButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: #059669;
+  color: white;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-right: 1rem;
+  
+  &:hover {
+    background-color: #047857;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.5);
+  }
+  
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 `;
 
 const AddIcon = styled.svg`
@@ -474,6 +514,56 @@ const JobList: React.FC = () => {
     }
   };
 
+  const exportToExcel = () => {
+    if (jobs.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    // Prepare data for Excel
+    const excelData = jobs.map(job => ({
+      'ID': job.id,
+      'Company Name': job.company_name,
+      'Job Title': job.job_title,
+      'Status': job.status,
+      'Applied Date': job.applied_date,
+      'Location': job.location,
+      'Job URL': job.job_url,
+      'Resume URL': job.resume_url || 'No resume',
+      'Job Description': job.job_description,
+      'Notes': job.notes
+    }));
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(excelData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 5 },  // ID
+      { wch: 20 }, // Company Name
+      { wch: 25 }, // Job Title
+      { wch: 12 }, // Status
+      { wch: 12 }, // Applied Date
+      { wch: 15 }, // Location
+      { wch: 40 }, // Job URL
+      { wch: 50 }, // Resume URL
+      { wch: 30 }, // Job Description
+      { wch: 30 }  // Notes
+    ];
+    ws['!cols'] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Job Applications');
+
+    // Generate filename with current date
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `job_applications_${date}.xlsx`;
+
+    // Save the file
+    XLSX.writeFile(wb, filename);
+  };
+
   if (loading) {
     return (
       <LoadingContainer>
@@ -495,12 +585,20 @@ const JobList: React.FC = () => {
               <Title>Job Applications</Title>
               <Subtitle>Track and manage your job search progress</Subtitle>
             </TitleSection>
-            <AddButton to="/add">
-              <AddIcon fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </AddIcon>
-              Add New Job
-            </AddButton>
+            <ButtonGroup>
+              <AddButton to="/add">
+                <AddIcon fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </AddIcon>
+                Add New Job
+              </AddButton>
+              <ExportButton onClick={exportToExcel}>
+                <AddIcon fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ marginRight: '0.5rem' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </AddIcon>
+                Export to Excel
+              </ExportButton>
+            </ButtonGroup>
           </HeaderContent>
         </Header>
 

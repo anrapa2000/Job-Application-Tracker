@@ -3,9 +3,6 @@ import styled from "styled-components";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
 
-// Get the base URL from the API configuration
-const API_BASE_URL = "http://localhost:8000";
-
 type Job = {
   id: number;
   company_name: string;
