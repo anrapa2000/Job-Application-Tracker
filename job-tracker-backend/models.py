@@ -11,7 +11,7 @@ class Job(Base):
     job_url = Column(String)
     status = Column(String)
     applied_date = Column(Date, default=datetime.date.today)
-    resume_file_path = Column(String)
+    resume_url = Column(String)
     job_description = Column(String)
     notes = Column(String)
     location = Column(String)

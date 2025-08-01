@@ -3,30 +3,17 @@ import models, schema
 import os
 import datetime
 
-def create_job(db: Session, job_data: schema.JobCreate, resume_path: str):
-    # Convert the date string to a proper date object for the database
+def create_job(db: Session, job_data: schema.JobCreate):
     job_dict = job_data.dict()
     if 'applied_date' in job_dict and isinstance(job_dict['applied_date'], str):
         job_dict['applied_date'] = datetime.datetime.strptime(job_dict['applied_date'], "%Y-%m-%d").date()
-    
-    job = models.Job(**job_dict, resume_file_path=resume_path)
+
+    job = models.Job(**job_dict)
     db.add(job)
     db.commit()
     db.refresh(job)
-    
-    # Return as dictionary with string date for API response
-    return {
-        'id': job.id,
-        'company_name': job.company_name,
-        'job_title': job.job_title,
-        'job_url': job.job_url,
-        'status': job.status,
-        'applied_date': job.applied_date.strftime("%Y-%m-%d") if job.applied_date else None,
-        'resume_file_path': job.resume_file_path,
-        'job_description': job.job_description,
-        'notes': job.notes,
-        'location': job.location
-    }
+
+    return job
 
 def get_jobs(db: Session):
     jobs = db.query(models.Job).all()
@@ -38,7 +25,7 @@ def get_jobs(db: Session):
             'job_url': job.job_url,
             'status': job.status,
             'applied_date': job.applied_date.strftime("%Y-%m-%d") if job.applied_date else None,
-            'resume_file_path': job.resume_file_path,
+            'resume_url': job.resume_url,
             'job_description': job.job_description,
             'notes': job.notes,
             'location': job.location
@@ -57,7 +44,7 @@ def get_job(db: Session, job_id: int):
             'job_url': job.job_url,
             'status': job.status,
             'applied_date': job.applied_date.strftime("%Y-%m-%d") if job.applied_date else None,
-            'resume_file_path': job.resume_file_path,
+            'resume_url': job.resume_url,
             'job_description': job.job_description,
             'notes': job.notes,
             'location': job.location
@@ -79,7 +66,7 @@ def update_status(db: Session, job_id: int, new_status: str):
             'job_url': job.job_url,
             'status': job.status,
             'applied_date': job.applied_date.strftime("%Y-%m-%d") if job.applied_date else None,
-            'resume_file_path': job.resume_file_path,
+            'resume_url': job.resume_url,
             'job_description': job.job_description,
             'notes': job.notes,
             'location': job.location
@@ -105,7 +92,7 @@ def update_job(db: Session, job_id: int, job_data: dict):
             'job_url': job.job_url,
             'status': job.status,
             'applied_date': job.applied_date.strftime("%Y-%m-%d") if job.applied_date else None,
-            'resume_file_path': job.resume_file_path,
+            'resume_url': job.resume_url,
             'job_description': job.job_description,
             'notes': job.notes,
             'location': job.location
@@ -115,14 +102,47 @@ def update_job(db: Session, job_id: int, job_data: dict):
 def delete_job(db: Session, job_id: int):
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if job:
-        # Delete the resume file if it exists
-        if job.resume_file_path and os.path.exists(job.resume_file_path):
-            try:
-                os.remove(job.resume_file_path)
-            except OSError:
-                pass  # Continue even if file deletion fails
+        # Check if this resume is used by other jobs
+        resume_url = job.resume_url
+        other_jobs_with_same_resume = db.query(models.Job).filter(
+            models.Job.resume_url == resume_url,
+            models.Job.id != job_id
+        ).count()
         
+        # Delete the job
         db.delete(job)
         db.commit()
+        
+        # If no other jobs use this resume, delete it from Cloudinary
+        if resume_url and other_jobs_with_same_resume == 0:
+            try:
+                import cloudinary
+                import cloudinary.uploader
+                
+                # Configure Cloudinary
+                cloudinary.config(
+                    cloud_name="dmi9k62p1",
+                    api_key="454389177853669",  # Replace with your API key
+                    api_secret="ag7bObdmA0auOYqSoYJF0aGzTOc"  # Replace with your API secret
+                )
+                
+                # Extract public_id from URL
+                if 'res.cloudinary.com' in resume_url:
+                    # Extract the path after /upload/
+                    url_parts = resume_url.split('/upload/')
+                    if len(url_parts) > 1:
+                        public_id = url_parts[1].split('/')[0]  # Get the version
+                        if '/' in url_parts[1]:
+                            public_id += '/' + '/'.join(url_parts[1].split('/')[1:])  # Add the rest of the path
+                        public_id = public_id.replace('.pdf', '').replace('.txt', '')
+                        
+                        # Delete from Cloudinary
+                        cloudinary.uploader.destroy(public_id, resource_type="raw")
+                        print(f"✅ Deleted resume from Cloudinary: {public_id}")
+            except Exception as e:
+                print(f"❌ Error deleting resume from Cloudinary: {e}")
+        elif resume_url and other_jobs_with_same_resume > 0:
+            print(f"✅ Resume kept in Cloudinary (used by {other_jobs_with_same_resume} other job(s))")
+        
         return True
     return False

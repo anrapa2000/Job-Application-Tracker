@@ -11,11 +11,12 @@ class JobCreate(BaseModel):
     notes: Optional[str]
     applied_date: str
     location: Optional[str]
+    resume_url: Optional[str]
 
 class JobOut(JobCreate):
     id: int
     applied_date: str
-    resume_file_path: Optional[str]
+    resume_url: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
