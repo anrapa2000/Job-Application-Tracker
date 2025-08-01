@@ -124,6 +124,74 @@ const ExportButton = styled.button`
   }
 `;
 
+const ImportButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: #7c3aed;
+  color: white;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-right: 1rem;
+  
+  &:hover {
+    background-color: #6d28d9;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.5);
+  }
+  
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+`;
+
+const TemplateButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: #f59e0b;
+  color: white;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-right: 1rem;
+  
+  &:hover {
+    background-color: #d97706;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5);
+  }
+  
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
 const ButtonGroup = styled.div`
   display: flex;
   align-items: center;
@@ -522,7 +590,6 @@ const JobList: React.FC = () => {
 
     // Prepare data for Excel
     const excelData = jobs.map(job => ({
-      'ID': job.id,
       'Company Name': job.company_name,
       'Job Title': job.job_title,
       'Status': job.status,
@@ -540,7 +607,6 @@ const JobList: React.FC = () => {
 
     // Set column widths
     const colWidths = [
-      { wch: 5 },  // ID
       { wch: 20 }, // Company Name
       { wch: 25 }, // Job Title
       { wch: 12 }, // Status
@@ -562,6 +628,155 @@ const JobList: React.FC = () => {
 
     // Save the file
     XLSX.writeFile(wb, filename);
+  };
+
+  const downloadTemplate = () => {
+    // Create template data
+    const templateData = [
+      {
+        'Company Name': 'Example Company',
+        'Job Title': 'Software Engineer',
+        'Status': 'Applied',
+        'Applied Date': '2025-08-01',
+        'Location': 'San Francisco, CA',
+        'Job URL': 'https://example.com/job',
+        'Resume URL': 'https://res.cloudinary.com/...',
+        'Job Description': 'Example job description',
+        'Notes': 'Example notes'
+      }
+    ];
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(templateData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 20 }, // Company Name
+      { wch: 25 }, // Job Title
+      { wch: 12 }, // Status
+      { wch: 12 }, // Applied Date
+      { wch: 15 }, // Location
+      { wch: 40 }, // Job URL
+      { wch: 50 }, // Resume URL
+      { wch: 30 }, // Job Description
+      { wch: 30 }  // Notes
+    ];
+    ws['!cols'] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+
+    // Save the file
+    XLSX.writeFile(wb, 'job_applications_template.xlsx');
+  };
+
+  const importFromExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    console.log('Importing file:', file.name, 'Size:', file.size);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      console.log('Excel data parsed:', jsonData);
+
+      if (jsonData.length === 0) {
+        alert('No data found in the Excel file');
+        return;
+      }
+
+      // Process each row and create jobs
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+
+      for (const row of jsonData) {
+        try {
+          const rowData = row as Record<string, string | number | undefined>;
+          console.log('Processing row:', rowData);
+          
+          // Skip rows that are just IDs or empty
+          if (Object.keys(rowData).length === 0 || 
+              (Object.keys(rowData).length === 1 && rowData['ID'])) {
+            console.log('Skipping row with only ID or empty row');
+            continue;
+          }
+          
+          // Map Excel columns to job data
+          const jobData = {
+            company_name: String(rowData['Company Name'] || rowData['Company'] || ''),
+            job_title: String(rowData['Job Title'] || rowData['Title'] || ''),
+            status: String(rowData['Status'] || 'Applied'),
+            applied_date: String(rowData['Applied Date'] || rowData['Date'] || new Date().toISOString().split('T')[0]),
+            location: String(rowData['Location'] || ''),
+            job_url: String(rowData['Job URL'] || rowData['URL'] || ''),
+            job_description: String(rowData['Job Description'] || rowData['Description'] || ''),
+            notes: String(rowData['Notes'] || ''),
+            resume_url: String(rowData['Resume URL'] || '')
+          };
+
+          console.log('Mapped job data:', jobData);
+
+          // Validate required fields
+          if (!jobData.company_name || !jobData.job_title) {
+            const error = `Row missing required fields: Company Name="${jobData.company_name}", Job Title="${jobData.job_title}"`;
+            console.error(error);
+            errors.push(error);
+            errorCount++;
+            continue;
+          }
+
+          // Create job via API
+          console.log('Sending to API:', jobData);
+          
+          // Create FormData for the API call
+          const formData = new FormData();
+          formData.append('company_name', jobData.company_name);
+          formData.append('job_title', jobData.job_title);
+          formData.append('status', jobData.status);
+          formData.append('applied_date', jobData.applied_date);
+          formData.append('location', jobData.location);
+          formData.append('job_url', jobData.job_url);
+          formData.append('job_description', jobData.job_description);
+          formData.append('notes', jobData.notes);
+          formData.append('resume_url', jobData.resume_url);
+          
+          await api.post('/jobs/', formData);
+          successCount++;
+          console.log('✅ Job created successfully');
+        } catch (error) {
+          console.error('Error importing job:', error);
+          errors.push(`Error importing job: ${error}`);
+          errorCount++;
+        }
+      }
+
+      // Refresh jobs list
+      await fetchJobs();
+
+      // Show results
+      if (successCount > 0) {
+        const message = `Import completed!\n✅ Successfully imported: ${successCount} jobs\n❌ Failed to import: ${errorCount} jobs`;
+        if (errors.length > 0) {
+          console.log('Import errors:', errors);
+        }
+        alert(message);
+      } else {
+        alert('No jobs were imported. Please check your Excel file format.\n\nExpected columns: Company Name, Job Title, Status, Applied Date, Location, Job URL, Resume URL, Job Description, Notes');
+      }
+
+    } catch (error) {
+      console.error('Error reading Excel file:', error);
+      alert('Error reading Excel file. Please make sure it\'s a valid Excel file.');
+    }
+
+    // Clear the input
+    event.target.value = '';
   };
 
   if (loading) {
@@ -592,12 +807,30 @@ const JobList: React.FC = () => {
                 </AddIcon>
                 Add New Job
               </AddButton>
+              <TemplateButton onClick={downloadTemplate}>
+                <AddIcon fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ marginRight: '0.5rem' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </AddIcon>
+                Download Template
+              </TemplateButton>
+              <ImportButton onClick={() => document.getElementById('import-file')?.click()}>
+                <AddIcon fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ marginRight: '0.5rem' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </AddIcon>
+                Import Excel
+              </ImportButton>
               <ExportButton onClick={exportToExcel}>
                 <AddIcon fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ marginRight: '0.5rem' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </AddIcon>
                 Export to Excel
               </ExportButton>
+              <HiddenFileInput
+                id="import-file"
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={importFromExcel}
+              />
             </ButtonGroup>
           </HeaderContent>
         </Header>
