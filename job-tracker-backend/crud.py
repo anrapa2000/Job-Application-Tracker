@@ -2,6 +2,10 @@ from sqlalchemy.orm import Session
 import models, schema
 import os
 import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 def create_job(db: Session, job_data: schema.JobCreate):
     job_dict = job_data.dict()
@@ -119,11 +123,11 @@ def delete_job(db: Session, job_id: int):
                 import cloudinary
                 import cloudinary.uploader
                 
-                # Configure Cloudinary
+                # Configure Cloudinary using environment variables
                 cloudinary.config(
-                    cloud_name="dmi9k62p1",
-                    api_key="454389177853669",  # Replace with your API key
-                    api_secret="ag7bObdmA0auOYqSoYJF0aGzTOc"  # Replace with your API secret
+                    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+                    api_key=os.getenv("CLOUDINARY_API_KEY"),
+                    api_secret=os.getenv("CLOUDINARY_API_SECRET")
                 )
                 
                 # Extract public_id from URL

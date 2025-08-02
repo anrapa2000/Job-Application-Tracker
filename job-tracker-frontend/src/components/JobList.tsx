@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import api from '../api';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
+import { CLOUDINARY_CONFIG } from '../config/cloudinary';
 
 type Job = {
   id: number;
@@ -631,7 +632,6 @@ const JobList: React.FC = () => {
   };
 
   const downloadTemplate = () => {
-    // Create template data
     const templateData = [
       {
         'Company Name': 'Example Company',
@@ -639,8 +639,8 @@ const JobList: React.FC = () => {
         'Status': 'Applied',
         'Applied Date': '2025-08-01',
         'Location': 'San Francisco, CA',
-        'Job URL': 'https://example.com/job',
-        'Resume URL': 'https://res.cloudinary.com/...',
+        'Job URL': 'https://company.com/careers/job-posting',
+        'Resume URL': `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/raw/upload/example-resume.pdf`,
         'Job Description': 'Example job description',
         'Notes': 'Example notes'
       }

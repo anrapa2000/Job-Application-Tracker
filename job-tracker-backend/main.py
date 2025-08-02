@@ -245,11 +245,11 @@ async def delete_cloudinary_resume(public_id: str):
         import cloudinary
         import cloudinary.uploader
         
-        # Configure Cloudinary (you'll need to add your credentials here)
+        # Configure Cloudinary using environment variables
         cloudinary.config(
-            cloud_name="dmi9k62p1",
-            api_key="454389177853669",  # Add your API key here
-            api_secret="ag7bObdmA0auOYqSoYJF0aGzTOc"  # Add your API secret here
+            cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+            api_key=os.getenv("CLOUDINARY_API_KEY"),
+            api_secret=os.getenv("CLOUDINARY_API_SECRET")
         )
         
         # Delete from Cloudinary

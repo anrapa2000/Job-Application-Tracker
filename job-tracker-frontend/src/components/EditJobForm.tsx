@@ -615,7 +615,7 @@ const EditJobForm: React.FC = () => {
                 name="job_url"
                 value={formData.job_url}
                 onChange={handleInputChange}
-                placeholder="https://example.com/job-posting"
+                placeholder="https://company.com/careers/job-posting"
               />
             </FormGroup>
 
