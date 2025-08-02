@@ -735,6 +735,7 @@ const JobForm: React.FC = () => {
                   }}
                 >
                   <option value="Applied">Applied</option>
+                  <option value="Online Assignment">Online Assignment</option>
                   <option value="Interviewing">Interviewing</option>
                   <option value="Rejected">Rejected</option>
                   <option value="Offer">Offer</option>

@@ -380,6 +380,13 @@ const StatusSelect = styled.select<{ status: string }>`
           border-color: #bfdbfe;
           &:hover { background-color: #bfdbfe; }
         `;
+      case 'online assignment':
+        return `
+          background-color: #f3e8ff;
+          color: #7c3aed;
+          border-color: #e9d5ff;
+          &:hover { background-color: #e9d5ff; }
+        `;
       case 'interviewing':
         return `
           background-color: #fef3c7;
@@ -867,6 +874,20 @@ const JobList: React.FC = () => {
           
           <StatCard>
             <StatContent>
+              <StatIcon color="#f3e8ff">
+                <StatIconSvg fill="none" stroke="currentColor" viewBox="0 0 24 24" color="#7c3aed">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </StatIconSvg>
+              </StatIcon>
+              <StatInfo>
+                <StatNumber color="#7c3aed">{jobs.filter(j => j.status === 'Online Assignment').length}</StatNumber>
+                <StatLabel>Online Assignment</StatLabel>
+              </StatInfo>
+            </StatContent>
+          </StatCard>
+          
+          <StatCard>
+            <StatContent>
               <StatIcon color="#fef3c7">
                 <StatIconSvg fill="none" stroke="currentColor" viewBox="0 0 24 24" color="#d97706">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -947,6 +968,7 @@ const JobList: React.FC = () => {
                           status={job.status}
                         >
                           <option value="Applied">Applied</option>
+                          <option value="Online Assignment">Online Assignment</option>
                           <option value="Interviewing">Interviewing</option>
                           <option value="Rejected">Rejected</option>
                           <option value="Offer">Offer</option>
