@@ -1,94 +1,94 @@
-# 📋 Job Application Tracker
+# Job Application Tracker
 
-A modern, full-stack web application for tracking job applications with resume management, status updates, and detailed analytics.
+A full-stack application to track job applications with resume management and Excel import/export capabilities.
 
-## ✨ Features
+## 🔐 Security Configuration
 
-### 🎯 Core Functionality
-- **Add Job Applications**: Upload resumes, track company details, job descriptions
-- **Dashboard View**: Excel-like table with real-time statistics and status tracking
-- **Edit Applications**: Update any job details from dashboard or job details page
-- **Delete Jobs**: Remove applications with confirmation dialog
-- **View Details**: Detailed job information with resume viewing/downloading
-- **Status Updates**: Inline status changes from the dashboard
-- **Location Tracking**: Track job locations for better organization
+### Environment Variables Setup
 
-### 📊 Excel Import/Export
-- **Export to Excel**: Download all job applications as Excel file
-- **Import from Excel**: Bulk import jobs from Excel files
-- **Template Download**: Get a template Excel file for manual entry
-- **Smart Column Mapping**: Handles different column name variations
-- **Validation**: Ensures required fields are present before import
+**Backend (.env file in job-tracker-backend/)**
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://postgres:password@your-supabase-host:5432/postgres
 
-### ☁️ Cloud Resume Management
-- **Cloudinary Integration**: Store resumes in the cloud
-- **Resume Selection**: Choose from existing resumes or upload new ones
-- **Smart Deletion**: Only deletes resumes when no other jobs reference them
-- **Company-based Organization**: Resumes organized by company folders
-- **Direct Viewing**: View PDFs directly from Cloudinary URLs
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 
-### 🎨 Modern UI/UX
-- **Styled-Components**: Clean, modern styling throughout
-- **Responsive Design**: Works seamlessly on all screen sizes
-- **Professional Look**: Modern cards, proper spacing, beautiful colors
-- **Smart Validation**: Form validation with change detection
-- **Loading States**: Smooth loading indicators and error handling
+# API Configuration
+API_BASE_URL=https://your-backend-url.onrender.com
+```
 
-### 🔧 Technical Excellence
-- **Full-Stack**: FastAPI backend + React frontend
-- **File Handling**: PDF resume upload, storage, and retrieval
-- **Data Validation**: Proper error handling and validation
-- **Date Handling**: Accurate date tracking without timezone issues
-- **TypeScript**: Full type safety throughout the application
+**Frontend (.env file in job-tracker-frontend/)**
+```bash
+# API Configuration
+VITE_API_BASE_URL=https://your-backend-url.onrender.com
+
+# Cloudinary Configuration
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+VITE_CLOUDINARY_API_KEY=your_api_key
+VITE_CLOUDINARY_API_SECRET=your_api_secret
+```
+
+### 🔒 Security Best Practices
+
+1. **Never commit .env files** - They're already in .gitignore
+2. **Use different credentials for development and production**
+3. **Rotate API keys regularly**
+4. **Use environment variables in deployment platforms**
+
+### 🚀 Deployment Security
+
+**Render Backend Environment Variables:**
+- `DATABASE_URL`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `CLOUDINARY_UPLOAD_PRESET`
+
+**Render Frontend Environment Variables:**
+- `VITE_API_BASE_URL`
+- `VITE_CLOUDINARY_CLOUD_NAME`
+- `VITE_CLOUDINARY_UPLOAD_PRESET`
+- `VITE_CLOUDINARY_API_KEY`
+- `VITE_CLOUDINARY_API_SECRET`
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.8+
 - Node.js 16+
-- npm or yarn
+- Supabase account
+- Cloudinary account
 
 ### Backend Setup
+```bash
+cd job-tracker-backend
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+pip install -r requirements.txt
 
-1. **Navigate to backend directory**
-   ```bash
-   cd job-tracker-backend
-   ```
+# Copy .env.example to .env and fill in your values
+cp .env.example .env
+# Edit .env with your actual credentials
 
-2. **Create virtual environment**
-   ```bash
-   python -m venv env
-   source env/bin/activate  # On Windows: env\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Start the backend server**
-   ```bash
-   uvicorn main:app --reload
-   ```
-   The backend will run on `http://localhost:8000`
+uvicorn main:app --reload
+```
 
 ### Frontend Setup
+```bash
+cd job-tracker-frontend
+npm install
 
-1. **Navigate to frontend directory**
-   ```bash
-   cd job-tracker-frontend
-   ```
+# Copy .env.example to .env and fill in your values
+cp .env.example .env
+# Edit .env with your actual credentials
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-   The frontend will run on `http://localhost:5173`
+npm run dev
+```
 
 ## 📁 Project Structure
 
@@ -97,111 +97,95 @@ Job-Application-Tracker/
 ├── job-tracker-backend/
 │   ├── main.py              # FastAPI application
 │   ├── models.py            # SQLAlchemy models
-│   ├── schema.py            # Pydantic schemas
 │   ├── crud.py              # Database operations
+│   ├── schema.py            # Pydantic schemas
 │   ├── database.py          # Database configuration
 │   ├── requirements.txt     # Python dependencies
-│   └── uploads/             # Resume storage directory
+│   └── .env                 # Environment variables (create this)
 ├── job-tracker-frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── JobList.tsx      # Dashboard component
-│   │   │   ├── JobForm.tsx      # Add job form
-│   │   │   ├── JobDetails.tsx   # Job details view
-│   │   │   └── EditJobForm.tsx  # Edit job form
-│   │   ├── utils/
-│   │   │   └── uploadToCloudinary.ts  # Cloudinary upload utility
-│   │   ├── App.tsx              # Main app component
-│   │   ├── api.ts               # API configuration
-│   │   └── index.css            # Global styles
-│   ├── package.json             # Node.js dependencies
-│   └── create-test-excel.js     # Excel test file generator
-├── setup.sh                     # Automated setup script
-├── start.sh                     # Quick start script
-└── README.md                    # This file
+│   │   ├── components/      # React components
+│   │   ├── utils/           # Utility functions
+│   │   └── config/          # Configuration files
+│   ├── package.json         # Node.js dependencies
+│   └── .env                 # Environment variables (create this)
+└── README.md
 ```
 
-## 🔧 Configuration
+## 🌟 Features
 
-### Cloudinary Setup (Optional)
-For resume cloud storage, create a Cloudinary account and update the configuration in `src/utils/uploadToCloudinary.ts`:
+- **Job Application Tracking**: Add, edit, delete, and view job applications
+- **Resume Management**: Upload resumes to Cloudinary with company-based organization
+- **Excel Import/Export**: Download job data as Excel and import from Excel files
+- **Modern UI**: Clean, responsive interface built with styled-components
+- **Real-time Updates**: Instant feedback on all operations
+- **Cloud Storage**: Secure resume storage with Cloudinary
+- **Database**: Persistent data storage with Supabase PostgreSQL
 
-```typescript
-const cloudName = "your-cloud-name";
-const uploadPreset = "your-upload-preset";
-```
+## 🔧 API Endpoints
 
-## 📊 Excel Import/Export Guide
-
-### Exporting Jobs
-1. Click "Export to Excel" button in the dashboard
-2. File will be downloaded with current date: `job_applications_YYYY-MM-DD.xlsx`
-3. Contains all job data with proper column formatting
-
-### Importing Jobs
-1. Click "Download Template" to get the correct format
-2. Fill in your job data following the template
-3. Click "Import Excel" and select your file
-4. System will validate and import jobs automatically
-
-### Supported Excel Columns
-| Column | Required | Description |
-|--------|----------|-------------|
-| Company Name | ✅ | Company name |
-| Job Title | ✅ | Job title |
-| Status | ❌ | Application status (defaults to "Applied") |
-| Applied Date | ❌ | Date applied (YYYY-MM-DD format) |
-| Location | ❌ | Job location |
-| Job URL | ❌ | Job posting URL |
-| Resume URL | ❌ | Cloudinary resume URL |
-| Job Description | ❌ | Job description |
-| Notes | ❌ | Additional notes |
-
-## 🛠️ Development
-
-### Backend API Endpoints
+### Jobs
 - `GET /jobs/` - List all jobs
 - `POST /jobs/` - Create new job
 - `GET /jobs/{id}` - Get specific job
 - `PUT /jobs/{id}` - Update job
 - `DELETE /jobs/{id}` - Delete job
-- `GET /jobs/{id}/resume` - Get job resume
-- `GET /cloudinary/resumes` - List cloud resumes
-- `DELETE /cloudinary/resumes/{public_id}` - Delete cloud resume
 
-### Frontend Components
-- **JobList**: Main dashboard with Excel-like table
-- **JobForm**: Add new job with resume upload
-- **JobDetails**: Detailed job view with resume viewing
-- **EditJobForm**: Edit existing job applications
+### Resumes
+- `GET /jobs/{id}/resume` - View job resume
+- `GET /cloudinary/resumes` - List existing resumes
+- `DELETE /cloudinary/resumes/{public_id}` - Delete resume
 
-## 🚀 Deployment
+## 🛠️ Technologies Used
 
-### Backend Deployment
-1. Install dependencies: `pip install -r requirements.txt`
-2. Set environment variables for production
-3. Run with production server: `uvicorn main:app --host 0.0.0.0 --port 8000`
+### Backend
+- **FastAPI**: Modern Python web framework
+- **SQLAlchemy**: Database ORM
+- **Pydantic**: Data validation
+- **PostgreSQL**: Database (via Supabase)
+- **Cloudinary**: File storage
 
-### Frontend Deployment
-1. Install dependencies: `npm install`
-2. Build for production: `npm run build`
-3. Serve the `dist` folder
+### Frontend
+- **React**: UI library
+- **TypeScript**: Type safety
+- **Styled Components**: CSS-in-JS styling
+- **React Router**: Client-side routing
+- **Axios**: HTTP client
 
-## 🤝 Contributing
+## 📊 Data Flow
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+1. **Frontend** → User submits form
+2. **Cloudinary** → Resume uploaded
+3. **Backend** → Job data + resume URL saved to Supabase
+4. **Database** → PostgreSQL stores structured data
+5. **Frontend** → Displays updated job list
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**Database Connection Error:**
+- Check `DATABASE_URL` in `.env`
+- Verify Supabase credentials
+- Ensure database is accessible
+
+**Cloudinary Upload Fails:**
+- Verify `CLOUDINARY_*` environment variables
+- Check upload preset configuration
+- Ensure file is PDF format
+
+**Frontend Can't Connect to Backend:**
+- Check `VITE_API_BASE_URL` in frontend `.env`
+- Verify CORS configuration
+- Ensure backend is running
+
+### Development Tips
+
+1. **Use .env.example files** as templates
+2. **Never commit sensitive data**
+3. **Test locally before deploying**
+4. **Check logs for detailed error messages**
 
 ## 📝 License
 
 This project is open source and available under the [MIT License](LICENSE).
-
-## 🙏 Acknowledgments
-
-- FastAPI for the excellent backend framework
-- React and Styled-Components for the modern UI
-- Cloudinary for cloud file storage
-- SheetJS for Excel functionality

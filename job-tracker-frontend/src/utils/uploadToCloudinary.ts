@@ -1,6 +1,7 @@
+import { CLOUDINARY_CONFIG } from '../config/cloudinary';
+
 export async function uploadToCloudinary(file: File, companyName?: string): Promise<string> {
-    const cloudName = "dmi9k62p1";
-    const uploadPreset = "jobtracker_unsigned";
+    const { cloudName, uploadPreset } = CLOUDINARY_CONFIG;
   
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
     const formData = new FormData();
