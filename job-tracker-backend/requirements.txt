@@ -5,3 +5,4 @@ pydantic
 python-multipart
 httpx
 cloudinary
+psycopg2-binary
